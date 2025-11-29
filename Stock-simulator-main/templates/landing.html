@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to SimuTradeX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+        .main-card {
+            background: linear-gradient(145deg, #e8f4fd, #d1ecf1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .title-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(240, 147, 251, 0.4);
+        }
+        .profile-image {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 4px solid #ffffff;
+        }
+        .section-card-1 {
+            background: linear-gradient(145deg, #e0f2fe, #b3e5fc);
+            border: 1px solid #81d4fa;
+            box-shadow: 0 10px 25px rgba(3, 169, 244, 0.1);
+        }
+        .section-card-2 {
+            background: linear-gradient(145deg, #f3e5f5, #e1bee7);
+            border: 1px solid #ce93d8;
+            box-shadow: 0 10px 25px rgba(156, 39, 176, 0.1);
+        }
+        .highlight-text {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-5xl mx-auto main-card rounded-3xl p-8 flex flex-col items-center justify-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-center title-gradient mb-3">SimuTradeX</h1>
+        <p class="text-xl text-center text-gray-800 mb-6 font-medium">Learn trading, invest smart, and grow your skills—<span class="font-bold text-blue-600">without any risk</span>.</p>
+        <img src="{{ url_for('static', filename='venkat.jpeg') }}" alt="Venkat" class="w-40 h-40 rounded-full profile-image object-cover mb-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 w-full max-w-4xl">
+            <div class="section-card-1 rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-blue-800 mb-3 text-center">Why SimuTradeX?</h2>
+                <p class="text-blue-700 text-base text-center mb-4 leading-relaxed">SimuTradeX is a stock market simulator designed for everyone who wants to learn trading and investing in a safe, risk-free environment.</p>
+                <ul class="list-disc list-inside text-blue-700 text-base space-y-2">
+                    <li class="hover:text-blue-900 transition-colors">Trade with virtual money—no real risk</li>
+                    <li class="hover:text-blue-900 transition-colors">Get AI-powered stock analysis and predictions</li>
+                    <li class="hover:text-blue-900 transition-colors">Track your portfolio and performance</li>
+                    <li class="hover:text-blue-900 transition-colors">Stay updated with the latest market news</li>
+                    <li class="hover:text-blue-900 transition-colors">Perfect for beginners and aspiring investors</li>
+                </ul>
+            </div>
+            
+            <div class="section-card-2 rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-purple-800 mb-3 text-center">Why I Created This</h2>
+                <p class="text-purple-700 text-base text-center leading-relaxed">Hi, I'm <span class="highlight-text font-semibold">Venkat</span>! I built SimuTradeX to make stock market education accessible, engaging, and safe for everyone. My goal is to help you learn, experiment, and grow as an investor—without the fear of losing real money.</p>
+            </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row gap-4">
+            <a href="/login" class="btn-primary w-full md:w-auto px-8 py-3 text-xl text-white font-bold rounded-xl text-center">Login</a>
+            <a href="/register" class="btn-secondary w-full md:w-auto px-8 py-3 text-xl text-white font-bold rounded-xl text-center">Register</a>
+        </div>
+    </div>
+</body>
+</html> 

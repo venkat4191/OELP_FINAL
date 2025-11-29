@@ -1,0 +1,697 @@
+<!-- #i12 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Stock Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: #2d3748;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        .card:hover::before {
+            left: 100%;
+        }
+        .card:hover {
+            transform: translateY(-12px) scale(1.06);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 18px;
+            padding: 15px 30px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 15px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            flex: 1;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            transform: scale(1.02);
+        }
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        /* Mobile-specific styling for thinner inputs and buttons */
+        @media (max-width: 768px) {
+            .input-field {
+                padding: 8px 12px;
+                font-size: 12px !important;
+                border-radius: 15px;
+            }
+            .btn {
+                padding: 8px 16px;
+                font-size: 12px !important;
+                border-radius: 15px;
+            }
+            .search-icon {
+                margin-right: 4px !important;
+            }
+        }
+        .metric-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.4s;
+        }
+        .metric-card:hover::before {
+            left: 100%;
+        }
+        .metric-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        .trend-indicator {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .trend-up {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+            color: #10b981;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        .trend-down {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .trend-neutral {
+            background: linear-gradient(135deg, rgba(156, 163, 175, 0.2), rgba(156, 163, 175, 0.1));
+            color: #6b7280;
+            border: 1px solid rgba(156, 163, 175, 0.3);
+        }
+        .confidence-bar {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.3s ease;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+        .sentiment-positive {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .sentiment-negative {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .sentiment-neutral {
+            color: #6b7280;
+            font-weight: bold;
+        }
+        .price-change-positive {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .price-change-negative {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        .main-container {
+            min-height: 100vh;
+            padding: 30px;
+        }
+        @media (max-width: 640px) {
+            body {
+                font-size: 12px;
+            }
+            h1, h2, h3, h4, p, label, span, button, .btn, input {
+                font-size: 0.85rem !important;
+            }
+            .btn {
+                padding: 8px 14px;
+            }
+            .input-field {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; top: 20%; width: 25px; height: 25px; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 80%; top: 60%; width: 20px; height: 20px; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 60%; top: 10%; width: 30px; height: 30px; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 20%; top: 80%; width: 23px; height: 23px; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 90%; top: 30%; width: 27px; height: 27px; animation-delay: 3s;"></div>
+    </div>
+    
+    <!-- Always-visible Heading and Hamburger -->
+    <div class="w-full flex flex-row items-center justify-center mt-0 mb-0 px-4 relative flex md:hidden">
+        <!-- Hamburger only on mobile, now at topmost left -->
+        <button id="menu-btn" class="block fixed top-2 left-2 z-50 text-white focus:outline-none md:hidden" aria-label="Open menu">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+        <h1 class="text-2xl font-extrabold text-white drop-shadow-lg text-center w-full mb-0 mt-0 flex items-center justify-center">
+            <i class="fas fa-robot mr-2 text-pink-400"></i>AI Stock Analysis
+        </h1>
+    </div>
+    <!-- Slide-out Menu -->
+    <div id="mobile-menu" class="block fixed top-0 left-0 w-3/4 max-w-xs h-full bg-white shadow-lg z-50 transform -translate-x-full transition-transform duration-300 md:hidden">
+        <div class="flex flex-col p-6 gap-6 mt-8">
+            <a href="/" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow transition text-base flex items-center">
+                <i class="fas fa-home mr-2"></i>Back to Home
+            </a>
+            <button id="close-menu" class="mt-8 text-gray-700 font-bold">Close</button>
+        </div>
+    </div>
+    <div id="menu-overlay" class="hidden fixed inset-0 bg-black bg-opacity-30 z-40 md:hidden"></div>
+    <div class="main-container">
+        <div class="container mx-auto">
+            <!-- Header for desktop only -->
+            <div class="hidden md:flex flex-row items-center justify-center mb-12">
+                <h1 class="text-6xl font-bold text-white drop-shadow-lg flex items-center gap-4">
+                    <i class="fas fa-robot text-pink-400"></i>AI Stock Analysis
+                </h1>
+            </div>
+            <p class="text-lg md:text-2xl text-white drop-shadow-md opacity-90 text-center mb-12">Advanced market analysis powered by machine learning and technical indicators</p>
+
+            <!-- Search Form -->
+            <div class="max-w-3xl mx-auto mb-8">
+                <form id="analyze-form" action="/analyze" method="post" class="flex gap-2 md:gap-4 p-2 md:p-4">
+                    <div class="relative flex-1">
+                        <input type="text" id="symbol-input" name="symbol" placeholder="Enter stock symbol (e.g., RELIANCE) or company name (e.g., Bharat Electronics)" 
+                               class="input-field w-full text-xs md:text-base py-2 px-3 md:py-3 md:px-4"
+                               required autocomplete="off">
+                        <div id="symbol-suggestions" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto"></div>
+                        <div id="symbol-loading" class="hidden absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <i class="fas fa-spinner fa-spin text-blue-500"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn text-xs md:text-base py-2 px-3 md:py-3 md:px-4">
+                        <i class="fas fa-search search-icon mr-1 md:mr-3"></i>Analyze Stock
+                    </button>
+                </form>
+                <p class="text-xs md:text-sm text-gray-300 text-center mt-2">You can type either the stock symbol or company name (e.g., "Bharat Electronics" → BEL)</p>
+            </div>
+
+            {% if prediction %}
+                {% if prediction.current_price == 'N/A' %}
+                <div class="card p-4 md:p-8 bg-red-100 border border-red-300 mb-8">
+                    <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-red-600">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>No Data Found
+                    </h2>
+                    <p class="text-center text-base md:text-lg text-gray-800 font-semibold">
+                        Please check the stock symbol you entered.<br>
+                        <span class="text-red-500 font-bold">Do not enter the company name.</span><br>
+                        Enter the correct NSE symbol (e.g., <b>BHARTIARTL</b>, <b>NVDA</b>).<br>
+                        You can find the correct symbol by searching "COMPANY NAME NSE SYMBOL" on Google.
+                    </p>
+                </div>
+                {% else %}
+                <!-- Analysis Results -->
+                <div class="space-y-10">
+                    <!-- Price Prediction -->
+                    <div class="card p-4 md:p-8">
+                        <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-gray-800">
+                            <i class="fas fa-chart-line mr-4 text-pink-500"></i>Price Analysis
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+                            <div>
+                                <div class="mb-6">
+                                    <p class="text-sm md:text-lg font-bold text-gray-600 mb-1">Current Price</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">₹{{ prediction.current_price }}</p>
+                                </div>
+                                <div class="mb-6">
+                                    <p class="text-sm md:text-lg font-bold text-gray-600 mb-1">5-Month Predicted Price</p>
+                                    <p class="text-base md:text-xl font-bold {% if prediction.future_prices and prediction.future_prices[-1] > prediction.current_price %}price-change-positive{% else %}price-change-negative{% endif %}">
+                                        ₹{{ prediction.future_prices[-1] if prediction.future_prices else 'N/A' }}
+                                    </p>
+                                    {% if prediction.future_prices %}
+                                    <p class="text-xs md:text-base text-gray-600 mt-1">
+                                        {% set change = ((prediction.future_prices[-1] - prediction.current_price) / prediction.current_price * 100) | round(2) %}
+                                        {% if change > 0 %}+{% endif %}{{ change }}% change
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="text-sm md:text-lg font-bold text-gray-600 mb-1">Prediction Confidence</p>
+                                    <div class="flex items-center gap-4">
+                                        <div class="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="confidence-bar" style="width: {{ prediction.confidence }}%"></div>
+                                        </div>
+                                        <span class="text-base md:text-xl font-bold text-gray-800">{{ prediction.confidence }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="mb-6">
+                                    <p class="text-sm md:text-lg font-bold text-gray-600 mb-1">Market Regime</p>
+                                    <p class="text-base md:text-xl font-bold {% if prediction.market_regime == 'Bullish' %}text-green-600{% elif prediction.market_regime == 'Bearish' %}text-red-600{% else %}text-blue-600{% endif %}">
+                                        {{ prediction.market_regime }}
+                                    </p>
+                                </div>
+                                <div class="mb-6">
+                                    <p class="text-sm md:text-lg font-bold text-gray-600 mb-1">Sentiment Score</p>
+                                    <p class="text-base md:text-xl font-bold {% if prediction.sentiment_score > 0 %}sentiment-positive{% elif prediction.sentiment_score < 0 %}sentiment-negative{% else %}sentiment-neutral{% endif %}">
+                                        {{ prediction.sentiment_score }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Future Price Prediction -->
+                    {% if prediction.future_prediction_graph %}
+                    <div class="card p-4 md:p-8">
+                        <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-gray-800">
+                            <i class="fas fa-chart-area mr-4 text-green-500"></i>5-Month Price Prediction
+                        </h2>
+                        <div class="aspect-w-16 aspect-h-12 mb-2 md:mb-4">
+                            <img src="data:image/png;base64,{{ prediction.future_prediction_graph }}" 
+                                 alt="Future Price Prediction" class="w-full h-full object-contain rounded-2xl">
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Market Analysis -->
+                    {% if prediction.market_analysis %}
+                    <div class="card p-4 md:p-8">
+                        <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-gray-800">
+                            <i class="fas fa-chart-bar mr-4 text-blue-500"></i>Market Analysis
+                        </h2>
+                        <div class="analysis-grid gap-2 md:gap-4">
+                            <!-- Trend Analysis -->
+                            <div class="metric-card p-2 md:p-4">
+                                <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-blue-600">
+                                    <i class="fas fa-trending-up mr-2"></i>Trend Analysis
+                                </h3>
+                                <div class="space-y-1 md:space-y-2">
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Current Trend</p>
+                                    <p class="text-base md:text-xl font-bold {% if 'Uptrend' in prediction.market_analysis.trend.trend %}text-green-600{% elif 'Downtrend' in prediction.market_analysis.trend.trend %}text-red-600{% else %}text-blue-600{% endif %}">
+                                        {{ prediction.market_analysis.trend.trend }}
+                                    </p>
+                                    <p class="text-xs md:text-base text-gray-600">20-day MA: ₹{{ prediction.market_analysis.trend.ma20 }}</p>
+                                    <p class="text-xs md:text-base text-gray-600">50-day MA: ₹{{ prediction.market_analysis.trend.ma50 }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Support & Resistance -->
+                            <div class="metric-card p-2 md:p-4">
+                                <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-blue-600">
+                                    <i class="fas fa-shield-alt mr-2"></i>Support & Resistance
+                                </h3>
+                                <div class="space-y-1 md:space-y-2">
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Support Level</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">₹{{ prediction.market_analysis.support_resistance.support }}</p>
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Resistance Level</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">₹{{ prediction.market_analysis.support_resistance.resistance }}</p>
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Price Range</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">₹{{ prediction.market_analysis.support_resistance.range }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Volatility -->
+                            <div class="metric-card p-2 md:p-4">
+                                <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-blue-600">
+                                    <i class="fas fa-chart-line mr-2"></i>Volatility
+                                </h3>
+                                <div class="space-y-1 md:space-y-2">
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Daily Volatility</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">{{ prediction.market_analysis.volatility.daily_volatility }}%</p>
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Annualized Volatility</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">{{ prediction.market_analysis.volatility.annualized_volatility }}%</p>
+                                </div>
+                            </div>
+
+                            <!-- Volume Analysis -->
+                            <div class="metric-card p-2 md:p-4">
+                                <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-blue-600">
+                                    <i class="fas fa-volume-up mr-2"></i>Volume Analysis
+                                </h3>
+                                <div class="space-y-1 md:space-y-2">
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Average Volume</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">{{ prediction.market_analysis.volume_analysis.average_volume }}</p>
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Recent Volume</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">{{ prediction.market_analysis.volume_analysis.recent_volume }}</p>
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Volume Trend</p>
+                                    <p class="text-base md:text-xl font-bold {% if prediction.market_analysis.volume_analysis.volume_trend == 'Increasing' %}text-green-600{% else %}text-red-600{% endif %}">
+                                        {{ prediction.market_analysis.volume_analysis.volume_trend }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Momentum -->
+                            <div class="metric-card p-2 md:p-4">
+                                <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-blue-600">
+                                    <i class="fas fa-rocket mr-2"></i>Momentum
+                                </h3>
+                                <div class="space-y-1 md:space-y-2">
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Rate of Change</p>
+                                    <p class="text-base md:text-xl font-bold {% if prediction.market_analysis.momentum.rate_of_change > 0 %}text-green-600{% elif prediction.market_analysis.momentum.rate_of_change < 0 %}text-red-600{% else %}text-blue-600{% endif %}">
+                                        {{ prediction.market_analysis.momentum.rate_of_change }}%
+                                    </p>
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Momentum</p>
+                                    <p class="text-base md:text-xl font-bold {% if prediction.market_analysis.momentum.momentum > 0 %}text-green-600{% elif prediction.market_analysis.momentum.momentum < 0 %}text-red-600{% else %}text-blue-600{% endif %}">
+                                        ₹{{ prediction.market_analysis.momentum.momentum }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Technical Indicators -->
+                    <div class="card p-4 md:p-8">
+                        <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-gray-800">
+                            <i class="fas fa-cogs mr-4 text-purple-500"></i>Technical Indicators
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
+                            <div class="metric-card p-2 md:p-4">
+                                <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-purple-600">
+                                    <i class="fas fa-chart-line mr-2"></i>RSI
+                                </h3>
+                                <p class="text-base md:text-xl font-bold {% if prediction.technical_indicators.rsi > 70 %}text-red-600{% elif prediction.technical_indicators.rsi < 30 %}text-green-600{% else %}text-blue-600{% endif %}">
+                                    {{ prediction.technical_indicators.rsi }}
+                                </p>
+                                <p class="text-xs md:text-base text-gray-600 mt-1 font-semibold">Relative Strength Index</p>
+                            </div>
+                            <div class="metric-card p-2 md:p-4">
+                                <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-purple-600">
+                                    <i class="fas fa-chart-area mr-2"></i>MACD
+                                </h3>
+                                <p class="text-base md:text-xl font-bold {% if prediction.technical_indicators.macd > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                    {{ prediction.technical_indicators.macd }}
+                                </p>
+                                <p class="text-xs md:text-base text-gray-600 mt-1 font-semibold">Moving Average Convergence Divergence</p>
+                            </div>
+                            <div class="metric-card p-2 md:p-4">
+                                <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-purple-600">
+                                    <i class="fas fa-chart-bar mr-2"></i>Bollinger Bands
+                                </h3>
+                                <div class="space-y-1 md:space-y-2">
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Upper Band</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">₹{{ prediction.technical_indicators.bollinger_bands.upper }}</p>
+                                    <p class="text-xs md:text-sm text-gray-600 font-semibold">Lower Band</p>
+                                    <p class="text-base md:text-xl font-bold text-gray-800">₹{{ prediction.technical_indicators.bollinger_bands.lower }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Analysis Graphs -->
+                    {% if prediction.analysis_graph %}
+                    <div class="card p-4 md:p-8">
+                        <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-gray-800">
+                            <i class="fas fa-chart-pie mr-4 text-indigo-500"></i>Technical Analysis Charts
+                        </h2>
+                        <div class="aspect-w-16 aspect-h-12 mb-2 md:mb-4">
+                            <img src="data:image/png;base64,{{ prediction.analysis_graph }}" 
+                                 alt="Technical Analysis" class="w-full h-full object-contain rounded-2xl">
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{{ url_for('index') }}"
+       class="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-3 rounded-full shadow-2xl flex items-center gap-2 text-sm md:text-base">
+        <i class="fas fa-home"></i> Back to Home
+    </a>
+    <script>
+        // Hamburger menu toggle (copied from index.html)
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const closeMenu = document.getElementById('close-menu');
+        const menuOverlay = document.getElementById('menu-overlay');
+        menuBtn && menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('-translate-x-full');
+            menuOverlay.classList.remove('hidden');
+        });
+        closeMenu && closeMenu.addEventListener('click', () => {
+            mobileMenu.classList.add('-translate-x-full');
+            menuOverlay.classList.add('hidden');
+        });
+        menuOverlay && menuOverlay.addEventListener('click', () => {
+            mobileMenu.classList.add('-translate-x-full');
+            menuOverlay.classList.add('hidden');
+        });
+        
+        // Autocomplete functionality for stock symbol input
+        const symbolInput = document.getElementById('symbol-input');
+        const symbolSuggestions = document.getElementById('symbol-suggestions');
+        const symbolLoading = document.getElementById('symbol-loading');
+        const analyzeForm = document.getElementById('analyze-form');
+        
+        let searchTimeout = null;
+        let currentSymbol = '';
+        
+        // Client-side cache for instant results
+        const searchCache = {};
+        const CACHE_DURATION = 3600000; // 1 hour in milliseconds
+        
+        // Function to display suggestions (reusable)
+        function displaySuggestions(data) {
+            if (data.success && data.suggestions && data.suggestions.length > 0) {
+                // Show multiple suggestions
+                let suggestionsHTML = '';
+                data.suggestions.forEach((suggestion, index) => {
+                    suggestionsHTML += `
+                        <div class="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-200 transition-colors ${index === 0 ? 'bg-blue-50' : ''} ${index === data.suggestions.length - 1 ? 'rounded-b-lg' : ''}" data-symbol="${suggestion.symbol}">
+                            <div class="font-bold text-blue-600 text-sm md:text-base flex items-center gap-2">
+                                <i class="fas fa-chart-line text-xs"></i>
+                                ${suggestion.symbol}
+                            </div>
+                            <div class="text-xs md:text-sm text-gray-600 mt-1 ml-5">${suggestion.company_name}</div>
+                        </div>
+                    `;
+                });
+                symbolSuggestions.innerHTML = suggestionsHTML;
+                symbolSuggestions.classList.remove('hidden');
+                
+                // Add click handlers for each suggestion
+                symbolSuggestions.querySelectorAll('div[data-symbol]').forEach(div => {
+                    div.addEventListener('click', () => {
+                        const symbol = div.getAttribute('data-symbol');
+                        symbolInput.value = symbol;
+                        symbolSuggestions.classList.add('hidden');
+                        currentSymbol = symbol;
+                    });
+                });
+            } else if (data.is_symbol && data.suggestions && data.suggestions.length > 0) {
+                // It's already a valid symbol, show it as a suggestion
+                const suggestion = data.suggestions[0];
+                symbolSuggestions.innerHTML = `
+                    <div class="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-200" data-symbol="${suggestion.symbol}">
+                        <div class="font-bold text-blue-600 text-sm md:text-base">${suggestion.symbol}</div>
+                        <div class="text-xs md:text-sm text-gray-600 mt-1">${suggestion.company_name}</div>
+                    </div>
+                `;
+                symbolSuggestions.classList.remove('hidden');
+                symbolSuggestions.querySelector('div').addEventListener('click', () => {
+                    symbolInput.value = suggestion.symbol;
+                    symbolSuggestions.classList.add('hidden');
+                    currentSymbol = suggestion.symbol;
+                });
+            } else {
+                symbolSuggestions.classList.add('hidden');
+            }
+        }
+        
+        if (symbolInput) {
+            symbolInput.addEventListener('input', async function(e) {
+                const query = e.target.value.trim();
+                
+                // Clear previous timeout
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                
+                // Hide suggestions if input is empty
+                if (!query || query.length < 2) {
+                    symbolSuggestions.classList.add('hidden');
+                    symbolLoading.classList.add('hidden');
+                    return;
+                }
+                
+                // Check cache first
+                const cacheKey = query.toLowerCase();
+                if (searchCache[cacheKey] && (Date.now() - searchCache[cacheKey].timestamp < CACHE_DURATION)) {
+                    const cachedData = searchCache[cacheKey].data;
+                    displaySuggestions(cachedData);
+                    return;
+                }
+                
+                // Show loading indicator
+                symbolLoading.classList.remove('hidden');
+                symbolSuggestions.classList.add('hidden');
+                
+                // Debounce search - wait 300ms after user stops typing (optimized for speed)
+                searchTimeout = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`/search_stock?q=${encodeURIComponent(query)}`);
+                        const data = await response.json();
+                        
+                        // Cache the result
+                        if (data.success && data.suggestions) {
+                            searchCache[cacheKey] = {
+                                data: data,
+                                timestamp: Date.now()
+                            };
+                        }
+                        
+                        symbolLoading.classList.add('hidden');
+                        displaySuggestions(data);
+                    } catch (error) {
+                        console.error('Error searching for stock:', error);
+                        symbolLoading.classList.add('hidden');
+                        symbolSuggestions.classList.add('hidden');
+                    }
+                }, 300);
+            });
+            
+            // Handle form submission - convert company name to symbol if needed
+            analyzeForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                let symbol = symbolInput.value.trim();
+                
+                if (!symbol || symbol.length < 2) {
+                    alert('Please enter a stock symbol or company name');
+                    return;
+                }
+                
+                // If it's not already uppercase (likely a company name), search for symbol
+                if (symbol !== symbol.toUpperCase() || symbol.includes(' ')) {
+                    try {
+                        symbolLoading.classList.remove('hidden');
+                        const response = await fetch(`/search_stock?q=${encodeURIComponent(symbol)}`);
+                        const data = await response.json();
+                        symbolLoading.classList.add('hidden');
+                        
+                        if (data.success && data.suggestions && data.suggestions.length > 0) {
+                            // Use the first suggestion
+                            symbol = data.suggestions[0].symbol;
+                            symbolInput.value = symbol; // Update the input field
+                        } else {
+                            alert(`Could not find stock symbol for "${symbol}". Please try entering the NSE symbol directly (e.g., RELIANCE, TCS).`);
+                            return;
+                        }
+                    } catch (error) {
+                        symbolLoading.classList.add('hidden');
+                        alert('Error searching for stock. Please try entering the NSE symbol directly.');
+                        return;
+                    }
+                } else {
+                    symbol = symbol.toUpperCase();
+                }
+                
+                // Create a hidden form and submit with the correct symbol
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/analyze';
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'symbol';
+                input.value = symbol;
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (symbolInput && !symbolInput.contains(e.target) && symbolSuggestions && !symbolSuggestions.contains(e.target)) {
+                symbolSuggestions.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html> 
+

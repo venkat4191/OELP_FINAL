@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Stock</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: #1e293b;
+            min-height: 100vh;
+            margin: 0;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.87));
+            border-radius: 30px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+            border: 3px solid rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(18px);
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 18px;
+            padding: 12px 28px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            transform: scale(1.01);
+        }
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        @media (max-width: 640px) {
+            body {
+                font-size: 12px;
+            }
+            h1, h2, h3, h4, p, label, span, input, button, .btn {
+                font-size: 0.85rem !important;
+            }
+            .btn {
+                padding: 8px 14px;
+            }
+            .input-field {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; top: 20%; width: 25px; height: 25px; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 80%; top: 60%; width: 20px; height: 20px; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 60%; top: 10%; width: 30px; height: 30px; animation-delay: 4s;"></div>
+    </div>
+
+    <div class="min-h-screen flex flex-col items-center px-4 py-10">
+        <div class="w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white drop-shadow-lg flex items-center gap-3">
+                <i class="fas fa-hand-holding-usd text-red-300"></i>Sell Form
+            </h1>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-5xl mb-6">
+            <div class="card p-4">
+                <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Symbol</p>
+                <p class="text-2xl font-extrabold text-gray-800">{{ selected_holding.symbol if selected_holding else (symbol_prefill or 'Select Stock') }}</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Owned Shares</p>
+                <p class="text-2xl font-extrabold text-blue-600">
+                    {% if selected_holding %}
+                        {{ selected_holding.shares }}
+                    {% elif symbol_prefill %}
+                        0
+                    {% else %}
+                        —
+                    {% endif %}
+                </p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">Avg. Cost</p>
+                <p class="text-2xl font-extrabold text-green-600">
+                    {% if selected_holding %}
+                        ₹{{ "%.2f"|format(selected_holding.avg_price) }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card w-full max-w-4xl p-4 md:p-10">
+            <h2 class="text-lg md:text-4xl font-bold mb-2 md:mb-6 text-center text-gray-800">
+                <i class="fas fa-sell mr-2 md:mr-4 text-red-500"></i>Sell Stock
+            </h2>
+            <form id="sell-form" class="space-y-4 md:space-y-6">
+                <div>
+                    <label for="symbol" class="block text-xs md:text-lg font-bold mb-1 text-gray-700">Stock Symbol</label>
+                    <input type="text" id="symbol" name="symbol" required class="input-field w-full"
+                           placeholder="Enter stock symbol (e.g., RELIANCE)">
+                </div>
+                <div>
+                    <label for="shares" class="block text-xs md:text-lg font-bold mb-1 text-gray-700">Number of Shares</label>
+                    <input type="number" id="shares" name="shares" min="1" required class="input-field w-full"
+                           placeholder="Enter number of shares">
+                </div>
+                <button type="button" id="check-price-btn" class="btn w-full justify-center text-xs md:text-xl py-2 md:py-4 mt-2">
+                    <i class="fas fa-search mr-2"></i>Check Price & Review
+                </button>
+            </form>
+
+            <div id="price-results" class="hidden mt-6 space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 md:p-6 space-y-3">
+                    <div class="flex justify-between">
+                        <span class="font-bold text-gray-600">Symbol</span>
+                        <span class="font-bold text-gray-900" id="result-symbol"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-bold text-gray-600">Current Price</span>
+                        <span class="font-bold text-green-600" id="result-price"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-bold text-gray-600">Shares</span>
+                        <span class="font-bold text-blue-600" id="result-shares"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-bold text-gray-600">Average Buy Price</span>
+                        <span class="font-bold text-gray-800" id="result-avg-price"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-bold text-gray-600">Total Value</span>
+                        <span class="font-bold text-green-600" id="result-total"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-bold text-gray-600">Profit / Loss (this order)</span>
+                        <span class="font-bold" id="result-pnl"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-bold text-gray-600">Available Shares</span>
+                        <span class="font-bold text-gray-800" id="result-available-shares"></span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Last Updated</span>
+                        <span id="result-timestamp"></span>
+                    </div>
+
+                    <div id="availability-check" class="hidden mt-2 p-3 rounded-xl bg-green-500 bg-opacity-15 text-center font-semibold text-green-700"></div>
+
+                    <div id="confirmation-buttons" class="hidden mt-4 flex flex-col md:flex-row gap-3">
+                        <form method="post" action="{% if intraday_position_id is defined %}{{ url_for('confirm_intraday_sell') }}{% else %}{{ url_for('confirm_sell') }}{% endif %}" class="flex-1">
+                            <input type="hidden" name="symbol" id="confirm-symbol">
+                            <input type="hidden" name="shares" id="confirm-shares">
+                            {% if intraday_position_id is defined %}
+                                <input type="hidden" name="position_id" value="{{ intraday_position_id }}">
+                            {% endif %}
+                            <button type="submit" class="btn w-full bg-red-500 hover:bg-red-600 text-xs md:text-sm py-2">
+                                <i class="fas fa-check"></i>Confirm Sell
+                            </button>
+                        </form>
+                        <button type="button" id="cancel-btn" class="btn flex-1 bg-gray-500 hover:bg-gray-600 text-xs md:text-sm py-2">
+                            <i class="fas fa-times"></i>Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const prefillSymbol = {{ (symbol_prefill or '')|tojson }};
+        const prefillShares = {{ (selected_holding.shares if selected_holding else None)|tojson }};
+        const prefillAvgPrice = {{ (selected_holding.avg_price if selected_holding else None)|tojson }};
+        const intradayPositionId = {{ (intraday_position_id if intraday_position_id is defined else None)|tojson }};
+        const symbolInput = document.getElementById('symbol');
+        const sharesInput = document.getElementById('shares');
+        const checkPriceBtn = document.getElementById('check-price-btn');
+        const priceResults = document.getElementById('price-results');
+        const confirmationButtons = document.getElementById('confirmation-buttons');
+        const availabilityCheck = document.getElementById('availability-check');
+        const resultAvgPrice = document.getElementById('result-avg-price');
+        const resultPnl = document.getElementById('result-pnl');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        if (prefillSymbol) symbolInput.value = prefillSymbol;
+        if (prefillShares) {
+            sharesInput.value = 1;
+            sharesInput.max = prefillShares;
+        }
+        // If we know avg price, show it by default in the results section when opened
+        if (prefillAvgPrice && resultAvgPrice) {
+            resultAvgPrice.textContent = `₹${Number(prefillAvgPrice).toFixed(2)}`;
+        }
+
+        // For intraday-specific sell form we always allow check price (we know there is a position)
+        const blockFormIfNoHoldings = {{ (holdings_available|length == 0)|tojson }};
+        if (!intradayPositionId && blockFormIfNoHoldings) {
+            checkPriceBtn.disabled = true;
+            checkPriceBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            checkPriceBtn.textContent = 'No Holdings Available';
+        }
+
+        checkPriceBtn && checkPriceBtn.addEventListener('click', async () => {
+            const symbol = symbolInput.value.trim().toUpperCase();
+            const shares = parseInt(sharesInput.value);
+            if (!symbol || !shares || shares < 1) {
+                alert('Please enter valid symbol and shares');
+                return;
+            }
+
+            checkPriceBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+            checkPriceBtn.disabled = true;
+
+            try {
+                let availableShares;
+                if (intradayPositionId) {
+                    // For intraday square-off, available shares come from the intraday position itself
+                    availableShares = prefillShares || shares;
+                    if (shares > availableShares) {
+                        alert(`You only have ${availableShares} intraday shares of ${symbol}. Cannot sell ${shares} shares.`);
+                        return;
+                    }
+                } else {
+                    const shareCheckResponse = await fetch(`/check_user_shares/${symbol}`);
+                    const shareData = await shareCheckResponse.json();
+                    if (!shareData.success) {
+                        alert('Error checking shares: ' + shareData.error);
+                        return;
+                    }
+
+                    availableShares = shareData.shares;
+                    if (shares > availableShares) {
+                        alert(`You only have ${availableShares} shares of ${symbol}. Cannot sell ${shares} shares.`);
+                        return;
+                    }
+                }
+
+                const response = await fetch(`/get_stock_price/${symbol}`);
+                const data = await response.json();
+                if (data.success) {
+                    const price = data.price;
+                    const totalValue = price * shares;
+                    const timestamp = new Date().toLocaleString();
+                    // Update basic fields
+                    document.getElementById('result-symbol').textContent = symbol;
+                    document.getElementById('result-price').textContent = `₹${price.toFixed(2)}`;
+                    document.getElementById('result-shares').textContent = shares;
+                    document.getElementById('result-total').textContent = `₹${totalValue.toFixed(2)}`;
+                    document.getElementById('result-available-shares').textContent = availableShares;
+                    document.getElementById('result-timestamp').textContent = timestamp;
+
+                    // Profit / Loss calculation if we know average price
+                    if (prefillAvgPrice && resultAvgPrice && resultPnl) {
+                        const avg = Number(prefillAvgPrice);
+                        resultAvgPrice.textContent = `₹${avg.toFixed(2)}`;
+                        const pnlPerShare = price - avg;
+                        const pnlTotal = pnlPerShare * shares;
+                        const pnlPercent = avg !== 0 ? (pnlPerShare / avg) * 100 : 0;
+
+                        let pnlText = `₹${pnlTotal.toFixed(2)} (${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)`;
+                        resultPnl.textContent = pnlText;
+
+                        // Colour coding
+                        resultPnl.classList.remove('text-green-600', 'text-red-600', 'text-gray-600');
+                        if (pnlTotal > 0) {
+                            resultPnl.classList.add('text-green-600');
+                        } else if (pnlTotal < 0) {
+                            resultPnl.classList.add('text-red-600');
+                        } else {
+                            resultPnl.classList.add('text-gray-600');
+                        }
+                    } else if (resultPnl) {
+                        // If we don't know avg price, clear P/L
+                        resultPnl.textContent = '—';
+                        resultPnl.classList.remove('text-green-600', 'text-red-600');
+                        resultPnl.classList.add('text-gray-600');
+                    }
+
+                    document.getElementById('confirm-symbol').value = symbol;
+                    document.getElementById('confirm-shares').value = shares;
+
+                    availabilityCheck.textContent = '✅ You have sufficient shares for this sale';
+                    availabilityCheck.classList.remove('hidden');
+                    confirmationButtons.classList.remove('hidden');
+                    priceResults.classList.remove('hidden');
+                } else {
+                    window.location.href = `/invalid_symbol?symbol=${encodeURIComponent(symbol)}`;
+                }
+            } catch (error) {
+                window.location.href = `/invalid_symbol?symbol=${encodeURIComponent(symbol)}`;
+            } finally {
+                checkPriceBtn.innerHTML = '<i class="fas fa-search mr-2"></i>Check Price & Review';
+                checkPriceBtn.disabled = false;
+            }
+        });
+
+        cancelBtn && cancelBtn.addEventListener('click', () => {
+            priceResults.classList.add('hidden');
+            confirmationButtons.classList.add('hidden');
+            availabilityCheck.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
+

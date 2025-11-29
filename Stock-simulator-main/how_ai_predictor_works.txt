@@ -1,0 +1,92 @@
+HOW THE AI PREDICTOR WORKS
+===========================
+
+Overview
+--------
+`StockAI` in `ai_predictor.py` pairs historical market data, engineered technical indicators, and two forecasting layers (a RandomForestRegressor and a deterministic future-path simulation) to produce the values shown in the UI. `StockCalculations` in `calculations.py` supplies every input: raw OHLCV data, engineered features, plotting artifacts, sentiment, market regime, and confidence.
+
+1. Data Acquisition Pipeline
+-----------------------------
+- Symbol Normalization: `predict_stock()` guarantees the `.NS` suffix so Yahoo Finance returns NSE data for Indian tickers.
+- Fetch: `StockCalculations.get_stock_data()` calls `yf.Ticker(symbol).history(period="1y")` and requires ≥200 trading days plus the full `Open/High/Low/Close/Volume` columns.
+- Cleaning: rows with missing values are dropped so downstream indicators and the scaler only see numeric inputs.
+
+2. Indicator & Feature Engineering
+----------------------------------
+`StockCalculations.calculate_technical_indicators(df)` enriches the base frame:
+- Trend / Price Action: SMA20, SMA50, SMA200, plus ADX and derived trend heuristics.
+- Momentum: RSI, MACD, MACD signal line, MACD histogram.
+- Volatility: Bollinger upper/middle/lower bands, ATR.
+- Volume: OBV and raw volume history.
+- Additional derived columns (returns, ROC, momentum, support/resistance, volatility stats) are produced when market context is requested.
+
+`StockCalculations.prepare_features(data)` then builds the supervised learning table with columns:
+`Returns, RSI, MACD, BB_Upper, BB_Lower, Volume, Open, High, Low, Close`.
+NaNs are removed, and everything is cast to float so the shared `MinMaxScaler` in `StockAI` can learn consistent bounds.
+
+3. Random Forest Prediction (`predict_price`)
+--------------------------------------------
+- Target Construction: `features['Close'].shift(-1)` becomes the next-day closing price. The final feature row is dropped because it lacks a target.
+- Scaling: `self.scaler.fit_transform(features)` bounds every column between 0 and 1.
+- Training: `RandomForestRegressor(n_estimators=100, random_state=42)` fits on the scaled matrix each time predictions are requested. Because the dataset is relatively small (~1 year), retraining on-demand remains fast and captures the latest dynamics.
+- Inference: the most recent scaled feature vector (`features_scaled[-1]`) feeds the forest to produce a scalar `predicted_price`.
+
+4. Hybrid Future Path Simulation (`predict_future_prices`)
+----------------------------------------------------------
+Purpose: provide a 150-business-day curve for the chart and data table, now blending Random Forest anchor predictions with deterministic math so the curve remains grounded in ML outputs.
+
+Anchor workflow:
+- Feature reuse: the same matrix created for `predict_price()` is passed into `predict_future_prices()`.
+- Anchor schedule: every `anchor_interval` business days (default 10) plus the final day form the anchor offsets (e.g., days 1, 11, 21, ..., 150).
+- Horizon-aware forest: for each offset `h`, the Random Forest is retrained with the target shifted by `-h` so it predicts the closing price `h` days ahead. Successful predictions become anchor targets.
+- Deterministic fill: between two anchors, the prior sine/cosine-based engine generates candidate prices, but each step blends 50% with the linearly interpolated anchor path, keeping the synthetic volatility while bending toward the ML target.
+- Anchor enforcement: when an offset matches an anchor, the price snaps exactly to the predicted value before proceeding to the next segment.
+
+Deterministic base (unchanged from earlier version):
+- Technical refresh: historical frame is re-run through `calculate_technical_indicators` to make sure MAs, RSI, etc., are in sync.
+- Baseline stats: current price, daily returns, and annualized volatility (`returns.std() * sqrt(252)`).
+- Trend metrics: percentage changes over 20, 50, and 200 sessions to capture short/medium/long trends. Their average forms `trend_strength`.
+- Future dates: `pd.date_range` with business-day frequency outruns the last historical timestamp.
+- Volatility modulation: `base_volatility = volatility * 0.01` converted to daily scale, then perturbed by a sine term so each simulated day uses `daily_volatility = base_volatility * (1 + 0.5 * sin(i * 0.1))`.
+- Trend modulation: `trend_effect = trend_strength * (1 + 0.2 * cos(i * 0.05))` ensures the slope breathes over time.
+- Cyclical noise: `cycle_effect = 0.5 * sin(i * 0.02) + 0.3 * cos(i * 0.01)` adds longer market cycles.
+- Price step: `price_movement = trend_component + stochastic_component + cycle_component`, applied multiplicatively to the previous price.
+- Guard rails: absolute daily change is clamped to ±3% to avoid unrealistic spikes.
+- Determinism: `np.random.seed(42)` ensures repeated calls yield identical paths for the same input history.
+
+5. Graph Generation
+-------------------
+`generate_prediction_graph()` (2×2 grid)
+- Subplot 1: Historical close, SMA20, SMA50, and the simulated future path. A confidence band uses ±2×std-dev of past returns around the forecast line.
+- Subplot 2: RSI with overbought (70) and oversold (30) guides.
+- Subplot 3: MACD vs. its signal line plus histogram bars.
+- Subplot 4: Bollinger Bands vs. price.
+- Styling: Matplotlib dark theme, `fill_between` for confidence shading, legend + grid for each subplot. The figure is saved to a PNG and base64 encoded.
+
+`generate_future_prediction_graph()` (single wide chart)
+- Historical close + simulated future path overlaid.
+- Confidence band identical to the previous chart.
+- Linear regression line (`np.polyfit` over the simulated prices) to show overall drift.
+- Customized dark background, rotated tick labels, and legend for readability.
+- Exported as base64 PNG for embedding in templates.
+
+6. Market Context & Confidence
+------------------------------
+- `analyze_market_regime()`: compares current price vs. layered SMAs and inspects ADX (>25 strong trend, 20–25 moderate). Returns strings such as "Strong Bullish".
+- `calculate_confidence()`: averages normalized components (RSI distance from 50, MACD magnitude, SMA alignment, annualized volatility penalty) and caps the final score between 0 and 100.
+- `analyze_sentiment()`: scrapes Google News result pages, extracts headlines, scores them with TextBlob polarity, and computes a weighted average. If news fails, a technical sentiment fallback maps RSI/MACD into -1..1 and adds light Gaussian noise.
+- `generate_market_analysis()`: bundles trend summary, support/resistance, volatility percentages, volume trend, and 20-day momentum/ROC stats.
+
+7. End-to-End Flow (`predict_stock`)
+------------------------------------
+1. Normalize ticker, fetch data, and compute indicators. Abort with placeholders if any stage fails.
+2. Build features, train the Random Forest, and produce `predicted_price`.
+3. Run `predict_future_prices` to get `(future_dates, future_prices)`; if successful, feed into `generate_future_prediction_graph`.
+4. Produce core charts via `StockCalculations.generate_analysis_graphs`.
+5. Add market regime, sentiment score, confidence, technical indicator snapshot, market analysis dictionary, and the formatted future price list.
+6. Return a single dictionary consumed by the Flask templates to render the dashboard.
+
+File Outputs
+------------
+- `how_ai_predictor_works.pdf`: visual summary (already created).
+- `how_ai_predictor_works.txt`: this detailed breakdown for quick reference or documentation.

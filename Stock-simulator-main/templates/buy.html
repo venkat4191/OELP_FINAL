@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Stock</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: #2d3748;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        .card:hover::before {
+            left: 100%;
+        }
+        .card:hover {
+            transform: translateY(-12px) scale(1.06);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 18px;
+            padding: 15px 30px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            transform: scale(1.02);
+        }
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 30px;
+            padding-top: 80px;
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 20px;
+                padding-top: 60px;
+            }
+            .btn {
+                padding: 10px 18px;
+                font-size: 12px;
+            }
+        }
+        @media (max-width: 640px) {
+            body {
+                font-size: 12px;
+            }
+            h1, h2, h3, h4, p, label, span, th, td, input, button, .btn {
+                font-size: 0.85rem !important;
+            }
+            .btn {
+                padding: 8px 14px;
+            }
+            .input-field {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; top: 20%; width: 25px; height: 25px; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 80%; top: 60%; width: 20px; height: 20px; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 60%; top: 10%; width: 30px; height: 30px; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 20%; top: 80%; width: 23px; height: 23px; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 90%; top: 30%; width: 27px; height: 27px; animation-delay: 3s;"></div>
+    </div>
+    
+    <div class="main-container">
+        <div class="container mx-auto flex flex-col justify-center items-center px-4 md:px-0 gap-8">
+            <div class="w-full text-center mb-4">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-white drop-shadow-lg flex items-center justify-center gap-3">
+                    <i class="fas fa-shopping-cart text-green-300"></i>Buy Stock
+                </h1>
+            </div>
+
+            <!-- Buy Form -->
+            <div class="card w-full max-w-4xl p-4 md:p-10">
+                <h2 class="text-lg md:text-4xl font-bold mb-2 md:mb-8 text-center text-gray-800">
+                    <i class="fas fa-shopping-cart mr-2 md:mr-4 text-green-500"></i>Purchase Stock
+                </h2>
+                <form id="buy-form" class="space-y-2 md:space-y-6">
+                    <div>
+                        <label for="symbol" class="block text-xs md:text-xl font-bold mb-1 md:mb-3 text-gray-700">Stock Symbol or Company Name</label>
+                        <div class="relative">
+                            <input type="text" id="symbol" name="symbol" required 
+                                   class="input-field w-full text-xs md:text-lg p-2 md:p-4" 
+                                   placeholder="Enter stock symbol (e.g., RELIANCE) or company name (e.g., Bharat Electronics)"
+                                   autocomplete="off">
+                            <div id="symbol-suggestions" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto"></div>
+                            <div id="symbol-loading" class="hidden absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <i class="fas fa-spinner fa-spin text-blue-500"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs md:text-sm text-gray-600 mt-1">You can type either the stock symbol or company name (e.g., "Bharat Electronics" → BEL)</p>
+                    </div>
+                    
+                    <div>
+                        <label for="shares" class="block text-xs md:text-xl font-bold mb-1 md:mb-3 text-gray-700">Number of Shares</label>
+                        <input type="number" id="shares" name="shares" min="1" required 
+                               class="input-field w-full text-xs md:text-lg p-2 md:p-4" 
+                               placeholder="Enter number of shares">
+                    </div>
+
+                    <!-- Order Type: Delivery vs Intraday (5x) -->
+                    <div>
+                        <p class="block text-xs md:text-xl font-bold mb-1 md:mb-3 text-gray-700">Order Type</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+                            <label class="flex items-center gap-2 bg-white bg-opacity-80 rounded-xl p-2 md:p-3 cursor-pointer border border-gray-200">
+                                <input type="radio" name="order_type" value="delivery" class="form-radio" checked>
+                                <div>
+                                    <p class="text-xs md:text-sm font-bold text-gray-800">Delivery</p>
+                                    <p class="text-[10px] md:text-xs text-gray-500">Normal buy, added to portfolio. Uses full amount.</p>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-2 bg-white bg-opacity-80 rounded-xl p-2 md:p-3 cursor-pointer border border-gray-200">
+                                <input type="radio" name="order_type" value="intraday" class="form-radio">
+                                <div>
+                                    <p class="text-xs md:text-sm font-bold text-gray-800">Intraday (5x)</p>
+                                    <p class="text-[10px] md:text-xs text-gray-500">Margin trade. Uses 1/5th of amount. Auto square-off same day.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="check-price-btn" class="btn w-full text-xs md:text-xl py-2 md:py-4 mt-2 md:mt-8">
+                        <i class="fas fa-search mr-1 md:mr-3"></i>Check Price & Review
+                    </button>
+                </form>
+                
+                <!-- Price Results Section (Hidden by default) -->
+                <div id="price-results" class="hidden mt-6 space-y-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 md:p-6">
+                        <h3 class="text-lg md:text-2xl font-bold text-center text-gray-800 mb-4">
+                            <i class="fas fa-info-circle mr-2 text-blue-500"></i>Price Information
+                        </h3>
+                        <div class="space-y-2 md:space-y-4">
+                            <div class="flex justify-between items-center p-3 bg-white bg-opacity-80 rounded-xl">
+                                <span class="text-xs md:text-lg font-bold text-gray-700">Symbol:</span>
+                                <span class="text-sm md:text-xl font-bold text-gray-800" id="result-symbol"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-white bg-opacity-80 rounded-xl">
+                                <span class="text-xs md:text-lg font-bold text-gray-700">Current Price:</span>
+                                <span class="text-lg md:text-2xl font-bold text-green-600" id="result-price"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-white bg-opacity-80 rounded-xl">
+                                <span class="text-xs md:text-lg font-bold text-gray-700">Number of Shares:</span>
+                                <span class="text-sm md:text-xl font-bold text-blue-600" id="result-shares"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-white bg-opacity-80 rounded-xl">
+                                <span class="text-xs md:text-lg font-bold text-gray-700">Total Cost:</span>
+                                <span class="text-lg md:text-2xl font-bold text-green-600" id="result-total"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-white bg-opacity-80 rounded-xl">
+                                <span class="text-xs md:text-lg font-bold text-gray-700">Available Balance:</span>
+                                <span class="text-sm md:text-xl font-bold text-gray-800" id="result-balance"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-white bg-opacity-80 rounded-xl">
+                                <span class="text-xs md:text-lg font-bold text-gray-700">Last Updated:</span>
+                                <span class="text-xs md:text-sm font-bold text-gray-600" id="result-timestamp"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Affordability Check -->
+                        <div id="affordability-check" class="mt-2 md:mt-4 p-2 md:p-3 rounded-xl hidden">
+                            <p class="text-center text-sm md:text-base font-bold" id="affordability-message"></p>
+                        </div>
+                        
+                        <!-- Affordability summary for intraday -->
+                        <div class="mt-2 md:mt-4 p-2 md:p-3 rounded-xl bg-yellow-50 border border-yellow-200 hidden" id="intraday-summary">
+                            <p class="text-xs md:text-sm font-semibold text-yellow-800" id="intraday-summary-text"></p>
+                        </div>
+
+                        <!-- Stop Loss Input (Optional) -->
+                        <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                            <label for="stop_loss_confirm" class="block text-xs md:text-lg font-bold mb-2 text-gray-700">
+                                <i class="fas fa-shield-alt mr-2 text-yellow-600"></i>Stop Loss Price (Optional)
+                            </label>
+                            <input type="number" id="stop_loss_confirm" name="stop_loss_confirm" min="0" step="0.01"
+                                   class="input-field w-full text-xs md:text-lg p-2 md:p-3" 
+                                   placeholder="Enter stop loss price (e.g., 1500.00)">
+                            <p class="text-xs md:text-sm text-gray-600 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>Stock will be automatically sold if market price falls below this price
+                            </p>
+                        </div>
+
+                        <!-- Confirmation Buttons -->
+                        <div id="confirmation-buttons" class="mt-2 md:mt-6 flex gap-2 md:gap-3 hidden">
+                            <form method="post" action="/confirm_buy" id="confirm-buy-form" class="flex-1">
+                                <input type="hidden" name="symbol" id="confirm-symbol">
+                                <input type="hidden" name="shares" id="confirm-shares">
+                                <input type="hidden" name="trade_type" id="confirm-trade-type" value="delivery">
+                                <input type="hidden" name="stop_loss" id="confirm-stop-loss">
+                                <button type="submit" class="btn w-full text-xs md:text-sm py-1 md:py-2 bg-green-500 hover:bg-green-600">
+                                    <i class="fas fa-check mr-1 md:mr-2"></i>Confirm Buy
+                                </button>
+                            </form>
+                            <button type="button" id="cancel-btn" class="btn text-xs md:text-sm py-1 md:py-2 bg-gray-500 hover:bg-gray-600 flex-1">
+                                <i class="fas fa-times mr-1 md:mr-2"></i>Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Error Message for Invalid Symbol -->
+                <div id="invalid-symbol-error" class="hidden card p-4 md:p-8 bg-red-100 border border-red-300 mb-8 mt-4">
+                    <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-red-600">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>No Data Found
+                    </h2>
+                    <p class="text-center text-base md:text-lg text-gray-800 font-semibold">
+                        Please check the stock symbol you entered.<br>
+                        <span class="text-red-500 font-bold">Do not enter the company name.</span><br>
+                        Enter the correct NSE symbol (e.g., <b>BHARTIARTL</b>, <b>NVDA</b>).<br>
+                        You can find the correct symbol by searching "COMPANY NAME NSE SYMBOL" on Google.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Pass user balance from Flask to JavaScript - convert to regular number
+        window.currentUserBalance = {% if current_user.is_authenticated %}{{ current_user.balance|float }}{% else %}0{% endif %};
+        
+        // Ensure it's a proper number
+        if (typeof window.currentUserBalance === 'string') {
+            window.currentUserBalance = parseFloat(window.currentUserBalance);
+        }
+        
+        // Check Price functionality for inline display
+        const checkPriceBtn = document.getElementById('check-price-btn');
+        const priceResults = document.getElementById('price-results');
+        const symbolInput = document.getElementById('symbol');
+        const sharesInput = document.getElementById('shares');
+        const confirmationButtons = document.getElementById('confirmation-buttons');
+        const affordabilityCheck = document.getElementById('affordability-check');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const symbolSuggestions = document.getElementById('symbol-suggestions');
+        const symbolLoading = document.getElementById('symbol-loading');
+        const orderTypeInputs = document.querySelectorAll('input[name="order_type"]');
+        const confirmTradeType = document.getElementById('confirm-trade-type');
+        const intradaySummary = document.getElementById('intraday-summary');
+        const intradaySummaryText = document.getElementById('intraday-summary-text');
+        
+        let searchTimeout = null;
+        let currentSymbol = '';
+        
+        // Client-side cache for instant results
+        const searchCache = {};
+        const CACHE_DURATION = 36000000; // 1 hour in milliseconds
+        
+        // Autocomplete functionality for stock symbol input
+        symbolInput.addEventListener('input', async function(e) {
+            const query = e.target.value.trim();
+            
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Hide suggestions if input is empty
+            if (!query || query.length < 2) {
+                symbolSuggestions.classList.add('hidden');
+                symbolLoading.classList.add('hidden');
+                return;
+            }
+            
+            // Check cache first
+            const cacheKey = query.toLowerCase();
+            if (searchCache[cacheKey] && (Date.now() - searchCache[cacheKey].timestamp < CACHE_DURATION)) {
+                const cachedData = searchCache[cacheKey].data;
+                displaySuggestions(cachedData);
+                return;
+            }
+            
+            // Show loading indicator
+            symbolLoading.classList.remove('hidden');
+            symbolSuggestions.classList.add('hidden');
+            
+            // Debounce search - wait 300ms after user stops typing (optimized for speed)
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/search_stock?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    // Cache the result
+                    if (data.success && data.suggestions) {
+                        searchCache[cacheKey] = {
+                            data: data,
+                            timestamp: Date.now()
+                        };
+                    }
+                    
+                    symbolLoading.classList.add('hidden');
+                    displaySuggestions(data);
+                } catch (error) {
+                    console.error('Error searching for stock:', error);
+                    symbolLoading.classList.add('hidden');
+                    symbolSuggestions.classList.add('hidden');
+                }
+            }, 300);
+        });
+        
+        // Function to display suggestions (reusable)
+        function displaySuggestions(data) {
+            if (data.success && data.suggestions && data.suggestions.length > 0) {
+                // Show multiple suggestions
+                let suggestionsHTML = '';
+                data.suggestions.forEach((suggestion, index) => {
+                    suggestionsHTML += `
+                        <div class="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-200 transition-colors ${index === 0 ? 'bg-blue-50' : ''} ${index === data.suggestions.length - 1 ? 'rounded-b-lg' : ''}" data-symbol="${suggestion.symbol}">
+                            <div class="font-bold text-blue-600 text-sm md:text-base flex items-center gap-2">
+                                <i class="fas fa-chart-line text-xs"></i>
+                                ${suggestion.symbol}
+                            </div>
+                            <div class="text-xs md:text-sm text-gray-600 mt-1 ml-5">${suggestion.company_name}</div>
+                        </div>
+                    `;
+                });
+                symbolSuggestions.innerHTML = suggestionsHTML;
+                symbolSuggestions.classList.remove('hidden');
+                
+                // Add click handlers for each suggestion
+                symbolSuggestions.querySelectorAll('div[data-symbol]').forEach(div => {
+                    div.addEventListener('click', () => {
+                        const symbol = div.getAttribute('data-symbol');
+                        symbolInput.value = symbol;
+                        symbolSuggestions.classList.add('hidden');
+                        currentSymbol = symbol;
+                    });
+                });
+            } else if (data.is_symbol && data.suggestions && data.suggestions.length > 0) {
+                // It's already a valid symbol, show it as a suggestion
+                const suggestion = data.suggestions[0];
+                symbolSuggestions.innerHTML = `
+                    <div class="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-200" data-symbol="${suggestion.symbol}">
+                        <div class="font-bold text-blue-600 text-sm md:text-base">${suggestion.symbol}</div>
+                        <div class="text-xs md:text-sm text-gray-600 mt-1">${suggestion.company_name}</div>
+                    </div>
+                `;
+                symbolSuggestions.classList.remove('hidden');
+                symbolSuggestions.querySelector('div').addEventListener('click', () => {
+                    symbolInput.value = suggestion.symbol;
+                    symbolSuggestions.classList.add('hidden');
+                    currentSymbol = suggestion.symbol;
+                });
+            } else {
+                symbolSuggestions.classList.add('hidden');
+            }
+        }
+        
+        // Keep confirm trade type in sync with selected order type
+        orderTypeInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                if (confirmTradeType) {
+                    confirmTradeType.value = input.value;
+                }
+            });
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!symbolInput.contains(e.target) && !symbolSuggestions.contains(e.target)) {
+                symbolSuggestions.classList.add('hidden');
+            }
+        });
+        
+        checkPriceBtn && checkPriceBtn.addEventListener('click', async () => {
+            let symbol = symbolInput.value.trim();
+            const shares = parseInt(sharesInput.value);
+
+            // Determine selected order type
+            let selectedOrderType = 'delivery';
+            orderTypeInputs.forEach(input => {
+                if (input.checked) selectedOrderType = input.value;
+            });
+            
+            // If we have a stored symbol from autocomplete, use it
+            if (!symbol || symbol.length < 2) {
+                alert('Please enter a stock symbol or company name');
+                return;
+            }
+            
+            // If it's not already uppercase (likely a company name), search for symbol
+            if (symbol !== symbol.toUpperCase() || symbol.includes(' ')) {
+                try {
+                    symbolLoading.classList.remove('hidden');
+                    const response = await fetch(`/search_stock?q=${encodeURIComponent(symbol)}`);
+                    const data = await response.json();
+                    symbolLoading.classList.add('hidden');
+                    
+                    if (data.success && data.suggestions && data.suggestions.length > 0) {
+                        // Use the first suggestion
+                        symbol = data.suggestions[0].symbol;
+                        symbolInput.value = symbol; // Update the input field
+                    } else {
+                        alert(`Could not find stock symbol for "${symbol}". Please try entering the NSE symbol directly (e.g., RELIANCE, TCS).`);
+                        return;
+                    }
+                } catch (error) {
+                    symbolLoading.classList.add('hidden');
+                    alert('Error searching for stock. Please try entering the NSE symbol directly.');
+                    return;
+                }
+            } else {
+                symbol = symbol.toUpperCase();
+            }
+            
+            if (!symbol) {
+                alert('Please enter a stock symbol');
+                return;
+            }
+            
+            if (!shares || shares < 1) {
+                alert('Please enter a valid number of shares');
+                return;
+            }
+            
+            checkPriceBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1 md:mr-2"></i>Loading...';
+            checkPriceBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`/get_stock_price/${symbol}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const price = data.price;
+                    const totalCost = price * shares;
+                    const timestamp = new Date().toLocaleString();
+                    
+                    // Update result fields
+                    document.getElementById('result-symbol').textContent = symbol;
+                    document.getElementById('result-price').textContent = `₹${price.toFixed(2)}`;
+                    document.getElementById('result-shares').textContent = shares;
+                    document.getElementById('result-total').textContent = `₹${totalCost.toFixed(2)}`;
+                    document.getElementById('result-balance').textContent = `₹${currentUserBalance || 'N/A'}`;
+                    document.getElementById('result-timestamp').textContent = timestamp;
+                    
+                    // Set hidden form values
+                    document.getElementById('confirm-symbol').value = symbol;
+                    document.getElementById('confirm-shares').value = shares;
+                    if (confirmTradeType) confirmTradeType.value = selectedOrderType;
+                    
+                    // Check affordability
+                    const userBalance = parseFloat(currentUserBalance) || 0;
+                    const cost = parseFloat(totalCost) || 0;
+
+                    let canAfford = false;
+                    let affordabilityText = '';
+
+                    // Reset intraday summary
+                    if (intradaySummary) intradaySummary.classList.add('hidden');
+
+                    if (selectedOrderType === 'intraday') {
+                        const leverage = 5;
+                        const requiredMargin = cost / leverage;
+                        canAfford = userBalance >= requiredMargin;
+                        affordabilityText = canAfford
+                            ? `✅ Intraday (5x): Margin required ₹${requiredMargin.toFixed(2)}. You have ₹${userBalance.toFixed(2)} available.`
+                            : `❌ Intraday (5x): Margin required ₹${requiredMargin.toFixed(2)}, but you only have ₹${userBalance.toFixed(2)}.`;
+
+                        if (intradaySummary && intradaySummaryText) {
+                            intradaySummaryText.textContent = `For intraday 5x, full position value is ₹${cost.toFixed(2)}, required margin is ₹${requiredMargin.toFixed(2)} (1/5th). Position will be auto squared off by end of day.`;
+                            intradaySummary.classList.remove('hidden');
+                        }
+                    } else {
+                        canAfford = userBalance >= cost;
+                        affordabilityText = canAfford
+                            ? `✅ Delivery: You have sufficient balance for this purchase.`
+                            : `❌ Delivery: You have ₹${userBalance.toFixed(2)} but need ₹${cost.toFixed(2)}.`;
+                    }
+
+                    document.getElementById('affordability-message').textContent = affordabilityText;
+                    document.getElementById('affordability-message').className =
+                        'text-center text-sm md:text-base font-bold ' + (canAfford ? 'text-green-600' : 'text-red-600');
+
+                    if (canAfford) {
+                        confirmationButtons.classList.remove('hidden');
+                    } else {
+                        confirmationButtons.classList.add('hidden');
+                    }
+                    
+                    affordabilityCheck.classList.remove('hidden');
+                    priceResults.classList.remove('hidden');
+                    
+                } else {
+                    // Redirect to message page for invalid symbol
+                    window.location.href = `/invalid_symbol?symbol=${encodeURIComponent(symbol)}`;
+                }
+            } catch (error) {
+                // Redirect to message page for invalid symbol
+                window.location.href = `/invalid_symbol?symbol=${encodeURIComponent(symbol)}`;
+            } finally {
+                checkPriceBtn.innerHTML = '<i class="fas fa-search mr-1 md:mr-3"></i>Check Price & Review';
+                checkPriceBtn.disabled = false;
+            }
+        });
+        
+        // Cancel button functionality
+        cancelBtn && cancelBtn.addEventListener('click', () => {
+            priceResults.classList.add('hidden');
+            confirmationButtons.classList.add('hidden');
+            affordabilityCheck.classList.add('hidden');
+        });
+        
+        // Capture stop loss value before form submission
+        const confirmBuyForm = document.getElementById('confirm-buy-form');
+        if (confirmBuyForm) {
+            confirmBuyForm.addEventListener('submit', function(e) {
+                const stopLossInput = document.getElementById('stop_loss_confirm');
+                const stopLossHidden = document.getElementById('confirm-stop-loss');
+                if (stopLossInput && stopLossHidden) {
+                    stopLossHidden.value = stopLossInput.value || '';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

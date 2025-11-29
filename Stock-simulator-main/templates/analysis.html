@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: #2d3748;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        .card:hover::before {
+            left: 100%;
+        }
+        .card:hover {
+            transform: translateY(-12px) scale(1.06);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 18px;
+            padding: 15px 30px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .metric-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.4s;
+        }
+        .metric-card:hover::before {
+            left: 100%;
+        }
+        .metric-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        .trend-up {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .trend-down {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .trend-neutral {
+            color: #6b7280;
+            font-weight: bold;
+        }
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        .main-container {
+            min-height: 100vh;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; top: 20%; width: 25px; height: 25px; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 80%; top: 60%; width: 20px; height: 20px; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 60%; top: 10%; width: 30px; height: 30px; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 20%; top: 80%; width: 23px; height: 23px; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 90%; top: 30%; width: 27px; height: 27px; animation-delay: 3s;"></div>
+    </div>
+    
+    <div class="main-container">
+        <div class="container mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-10">
+                <h1 class="text-6xl font-bold text-white drop-shadow-lg">
+                    <i class="fas fa-chart-bar mr-4 text-purple-400"></i>Stock Analysis
+                </h1>
+                <a href="/" class="btn text-lg">
+                    <i class="fas fa-home mr-3"></i>Back to Home
+                </a>
+            </div>
+
+            <!-- Analysis Results -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 mb-6">
+                <!-- Price Chart -->
+                <div class="card p-2 md:p-4">
+                    <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-gray-800">
+                        <i class="fas fa-chart-line mr-4 text-blue-500"></i>Price Chart
+                    </h2>
+                    <div class="aspect-w-16 aspect-h-9 max-h-32 md:max-h-48 mb-2 md:mb-4">
+                        <img src="{{ url_for('static', filename='price_chart.png') }}" 
+                             alt="Price Chart" class="w-full h-full object-contain rounded-2xl">
+                    </div>
+                </div>
+
+                <!-- Technical Indicators -->
+                <div class="card p-2 md:p-4">
+                    <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-gray-800">
+                        <i class="fas fa-chart-bar mr-4 text-green-500"></i>Technical Indicators
+                    </h2>
+                    <div class="aspect-w-16 aspect-h-9 max-h-32 md:max-h-48 mb-2 md:mb-4">
+                        <img src="{{ url_for('static', filename='indicators.png') }}" 
+                             alt="Technical Indicators" class="w-full h-full object-contain rounded-2xl">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Details -->
+            <div class="card p-2 md:p-4 mb-6">
+                <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-gray-800">
+                    <i class="fas fa-info-circle mr-4 text-indigo-500"></i>Analysis Details
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
+                    <div class="metric-card p-2 md:p-4">
+                        <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-indigo-600">Current Price</h3>
+                        <p class="text-base md:text-xl font-bold text-gray-800">₹{{ analysis.current_price }}</p>
+                    </div>
+                    <div class="metric-card p-2 md:p-4">
+                        <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-indigo-600">52-Week High</h3>
+                        <p class="text-base md:text-xl font-bold text-gray-800">₹{{ analysis.high_52w }}</p>
+                    </div>
+                    <div class="metric-card p-2 md:p-4">
+                        <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-indigo-600">52-Week Low</h3>
+                        <p class="text-base md:text-xl font-bold text-gray-800">₹{{ analysis.low_52w }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Analysis -->
+            <div class="card p-2 md:p-4">
+                <h2 class="text-base md:text-2xl font-bold mb-2 md:mb-4 text-center text-gray-800">
+                    <i class="fas fa-chart-bar mr-4 text-purple-500"></i>Technical Analysis
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4">
+                    <div class="metric-card p-2 md:p-4">
+                        <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-purple-600">
+                            <i class="fas fa-chart-line mr-2"></i>RSI
+                        </h3>
+                        <p class="text-base md:text-xl font-bold {% if analysis.rsi > 70 %}trend-down{% elif analysis.rsi < 30 %}trend-up{% else %}trend-neutral{% endif %}">
+                            {{ analysis.rsi }}
+                        </p>
+                        <p class="text-xs md:text-base text-gray-600 mt-1 font-semibold">Relative Strength Index</p>
+                    </div>
+                    <div class="metric-card p-2 md:p-4">
+                        <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-purple-600">
+                            <i class="fas fa-chart-area mr-2"></i>MACD
+                        </h3>
+                        <p class="text-sm md:text-xl font-bold {% if analysis.macd > 0 %}trend-up{% else %}trend-down{% endif %}">
+                            {{ analysis.macd }}
+                        </p>
+                        <p class="text-xs md:text-base text-gray-600 mt-1 font-semibold">Moving Average Convergence Divergence</p>
+                    </div>
+                    <div class="metric-card p-2 md:p-4">
+                        <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-purple-600">
+                            <i class="fas fa-chart-line mr-2"></i>SMA (20)
+                        </h3>
+                        <p class="text-sm md:text-xl font-bold text-gray-800">₹{{ analysis.sma_20 }}</p>
+                        <p class="text-xs md:text-base text-gray-600 mt-1 font-semibold">20-Day Simple Moving Average</p>
+                    </div>
+                    <div class="metric-card p-2 md:p-4">
+                        <h3 class="text-sm md:text-lg font-bold mb-1 md:mb-2 text-purple-600">
+                            <i class="fas fa-chart-line mr-2"></i>SMA (50)
+                        </h3>
+                        <p class="text-sm md:text-xl font-bold text-gray-800">₹{{ analysis.sma_50 }}</p>
+                        <p class="text-xs md:text-base text-gray-600 mt-1 font-semibold">50-Day Simple Moving Average</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enter symbol / Analyze Stock -->
+            <form action="/analyze" method="post" class="flex gap-2 md:gap-4 p-2 md:p-4">
+                <input type="text" name="symbol" placeholder="Enter stock symbol (e.g., RELIANCE, TCS)" 
+                       class="input-field text-xs md:text-base py-2 px-3 md:py-3 md:px-4"
+                       required>
+                <button type="submit" class="btn text-sm md:text-base py-2 px-3 md:py-3 md:px-4">
+                    <i class="fas fa-search mr-2 md:mr-3"></i>Analyze Stock
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html> 

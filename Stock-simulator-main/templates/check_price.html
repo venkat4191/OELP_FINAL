@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Stock Price</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: #2d3748;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        .card:hover::before {
+            left: 100%;
+        }
+        .card:hover {
+            transform: translateY(-12px) scale(1.06);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 18px;
+            padding: 15px 30px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 15px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            width: 100%;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            transform: scale(1.02);
+        }
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; top: 20%; width: 25px; height: 25px; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 80%; top: 60%; width: 20px; height: 20px; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 60%; top: 10%; width: 30px; height: 30px; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 20%; top: 80%; width: 23px; height: 23px; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 90%; top: 30%; width: 27px; height: 27px; animation-delay: 3s;"></div>
+    </div>
+    
+    <div class="main-container">
+        <div class="container mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-10">
+                <h1 class="text-6xl font-bold text-white drop-shadow-lg">
+                    <i class="fas fa-chart-line mr-4 text-green-400"></i>Check Stock Price
+                </h1>
+                <a href="/" class="btn text-lg">
+                    <i class="fas fa-home mr-3"></i>Back to Home
+                </a>
+            </div>
+
+            <!-- Price Check Form -->
+            <div class="card p-10 max-w-3xl mx-auto mb-8">
+                <h2 class="text-4xl font-bold mb-8 text-center text-gray-800">
+                    <i class="fas fa-chart-line mr-4 text-green-500"></i>Enter Stock Symbol
+                </h2>
+                <form action="/check_price" method="post" class="space-y-6">
+                    <div>
+                        <label for="symbol" class="block text-xl font-bold text-gray-700 mb-3">Stock Symbol</label>
+                        <input type="text" name="symbol" id="symbol" required
+                               class="input-field text-lg"
+                               placeholder="e.g., AAPL, GOOGL, MSFT">
+                    </div>
+                    <button type="submit" class="btn w-full text-xl py-4">
+                        <i class="fas fa-search mr-3"></i>Check Price
+                    </button>
+                </form>
+            </div>
+
+            <!-- Price Results -->
+            {% if price %}
+            <div class="card p-10 max-w-3xl mx-auto">
+                <h2 class="text-4xl font-bold mb-8 text-center text-gray-800">
+                    <i class="fas fa-info-circle mr-4 text-blue-500"></i>Price Information
+                </h2>
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center p-4 bg-white bg-opacity-80 rounded-2xl backdrop-blur-sm">
+                        <span class="text-xl font-bold text-gray-700">Symbol:</span>
+                        <span class="text-2xl font-bold text-gray-800">{{ symbol }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-white bg-opacity-80 rounded-2xl backdrop-blur-sm">
+                        <span class="text-xl font-bold text-gray-700">Current Price:</span>
+                        <span class="text-3xl font-bold text-green-600">${{ price }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-white bg-opacity-80 rounded-2xl backdrop-blur-sm">
+                        <span class="text-xl font-bold text-gray-700">Last Updated:</span>
+                        <span class="text-xl font-bold text-gray-800">{{ timestamp }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html> 
