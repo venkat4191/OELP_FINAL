@@ -66,7 +66,18 @@
     <div class="w-full max-w-5xl mx-auto main-card rounded-3xl p-8 flex flex-col items-center justify-center">
         <h1 class="text-4xl md:text-5xl font-extrabold text-center title-gradient mb-3">SimuTradeX</h1>
         <p class="text-xl text-center text-gray-800 mb-6 font-medium">Learn trading, invest smart, and grow your skills—<span class="font-bold text-blue-600">without any risk</span>.</p>
-        <img src="{{ url_for('static', filename='venkat.jpeg') }}" alt="Venkat" class="w-40 h-40 rounded-full profile-image object-cover mb-6">
+        
+        <!-- Team Photos -->
+        <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
+            <div class="flex flex-col items-center">
+                <img src="{{ url_for('static', filename='venkat.jpeg') }}" alt="Venkat" class="w-32 h-32 md:w-40 md:h-40 rounded-full profile-image object-cover mb-2">
+                <p class="text-sm md:text-base font-semibold text-gray-700">Venkat</p>
+            </div>
+            <div class="flex flex-col items-center">
+                <img src="{{ url_for('static', filename='friend.jpeg') }}" alt="Team Member" class="w-32 h-32 md:w-40 md:h-40 rounded-full profile-image object-cover mb-2">
+                <p class="text-sm md:text-base font-semibold text-gray-700">Prasanna</p>
+            </div>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 w-full max-w-4xl">
             <div class="section-card-1 rounded-2xl p-6">
@@ -82,8 +93,8 @@
             </div>
             
             <div class="section-card-2 rounded-2xl p-6">
-                <h2 class="text-xl font-bold text-purple-800 mb-3 text-center">Why I Created This</h2>
-                <p class="text-purple-700 text-base text-center leading-relaxed">Hi, I'm <span class="highlight-text font-semibold">Venkat</span>! I built SimuTradeX to make stock market education accessible, engaging, and safe for everyone. My goal is to help you learn, experiment, and grow as an investor—without the fear of losing real money.</p>
+                <h2 class="text-xl font-bold text-purple-800 mb-3 text-center">Why We Created This</h2>
+                <p class="text-purple-700 text-base text-center leading-relaxed">Hi, we're <span class="highlight-text font-semibold">Venkat</span> and <span class="highlight-text font-semibold">Prasanna</span>! We built SimuTradeX together to make stock market education accessible, engaging, and safe for everyone. Our goal is to help you learn, experiment, and grow as an investor—without the fear of losing real money.</p>
             </div>
         </div>
         
