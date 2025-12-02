@@ -28,14 +28,14 @@ import time
 load_dotenv()
 
 # Configure Gemini API
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyDuQ9w3pthLreRzDGNvHbqqaLv483RgcrM')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyDkt-cJ9xi8s1L1UlqJiBfk7eB-rGouvrw')
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
 # In-memory cache for stock suggestions (TTL: 1 hour)
 _stock_search_cache = {}
-_cache_ttl = 3600  # 1 hour in seconds
+_cache_ttl = 7200  # 1 hour in seconds
 
 # Common stock mappings for instant results (no API call needed)
 COMMON_STOCKS = {
