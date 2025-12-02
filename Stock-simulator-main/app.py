@@ -28,7 +28,7 @@ import time
 load_dotenv()
 
 # Configure Gemini API
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyDkt-cJ9xi8s1L1UlqJiBfk7eB-rGouvrw')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyACD-bGKLq2neLvcHP_FQoTtX8eGrm84Aw')
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
